@@ -4,10 +4,14 @@ from pathlib import Path
 
 import pandas as pd
 
+ALFABETO_VALIDO = set("ACGTN")
+
+
 COLS = ["Kingdom", "Phylum", "Class", "Order", "Family",
         "Species", "Source", "Source 2", "Notes"]
 
 FUENTES_VALIDAS = {"Repbase", "Dfam"}
+
 
 
 def clave(s):
@@ -46,3 +50,12 @@ def limpiar_csv(ruta):
     datos["species_key"] = datos["Species"].map(clave)
 
     return datos
+
+def normalizar_secuencia(seq):
+    """Pasa la secuencia a mayúsculas y verifica que solo contenga
+    A, C, G, T y N. Devuelve la secuencia normalizada."""
+    seq = seq.upper()
+    invalidos = set(seq) - ALFABETO_VALIDO
+    if invalidos:
+        raise ValueError(f"Caracteres no válidos: {sorted(invalidos)}")
+    return seq
