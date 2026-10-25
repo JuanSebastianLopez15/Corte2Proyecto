@@ -1,0 +1,9 @@
+lado,nombre_original,species_key,cruza_tras_normalizar
+solo_fasta,Abrus pulchellus subsp. cantoniensis,abrus pulchellus subsp cantoniensis,True
+solo_fasta,Beta vulgaris subsp. vulgaris,beta vulgaris subsp vulgaris,True
+solo_fasta,Coccomyxa sp. obi,coccomyxa sp obi,True
+solo_fasta,Marchantia polymorpha subsp. montivagans,marchantia polymorpha subsp montivagans,True
+solo_csv,Abrus pulchellus subsp cantoniensis,abrus pulchellus subsp cantoniensis,True
+solo_csv,Beta vulgaris subsp vulgaris,beta vulgaris subsp vulgaris,True
+solo_csv,Coccomyxa sp obi,coccomyxa sp obi,True
+solo_csv,Marchantia polymorpha subsp montivagans,marchantia polymorpha subsp montivagans,True
