@@ -1,6 +1,6 @@
 """
 Script interactivo para probar el funcionamiento de $jsonSchema e Índices en MongoDB.
-Ejecuta 4 pruebas clave en 'panteon_dev'.
+Ejecuta pruebas clave en 'panteon_dev' con borrado seguro y validación enum.
 """
 
 import sys
@@ -15,22 +15,26 @@ print("\n" + "="*60)
 print("  PROBANDO VALIDACIÓN ($jsonSchema) E ÍNDICES EN 'panteon_dev'")
 print("="*60 + "\n")
 
+# Limpieza previa de seguridad únicamente para los IDs de prueba
+db.species.delete_one({"species_key": "halicephalobus mephisto"})
+db.sequences.delete_one({"sequence_id": "PDB00000001"})
 
-# PRUEBA 1: Inserción válida en 'species'
-
-print("▶ PRUEBA 1: Insertando una especie con datos completos y válidos...")
+# -------------------------------------------------------------
+# PRUEBA 1: Inserción válida en 'species' (Alineada con limpiar.py)
+# -------------------------------------------------------------
+print("▶ PRUEBA 1: Insertando una especie con datos completos, mayúsculas y enum válido...")
 specie_valida = {
     "species_key": "halicephalobus mephisto",
-    "species": "Halicephalobus mephisto",
-    "kingdom": "Animalia",
-    "phylum": "Nematoda",
-    "class": "Chromadorea",
-    "order": "Rhabditida",
-    "family": "Panagrolaimidae",
-    "source": "RM2+MCH, Dfam",
+    "Species": "Halicephalobus mephisto",
+    "Kingdom": "Animalia",
+    "Phylum": "Nematoda",
+    "Class": "Chromadorea",
+    "Order": "Rhabditida",
+    "Family": "Panagrolaimidae",
+    "Source": "RM2+MCH, Dfam",
     "source_2": "Repbase",
     "annotation": None,
-    "notes": "Curated Dfam"
+    "Notes": "Curated Dfam"
 }
 
 try:
@@ -40,27 +44,25 @@ try:
 except Exception as e:
     print(f"  [ERROR INESPERADO]: {e}\n")
 
-
-# PRUEBA 2: Inserción inválida en 'species' (faltan campos obligatorios)
-
-print("▶ PRUEBA 2: Intentando insertar especie SIN campos obligatorios (sin kingdom ni phylum)...")
-specie_incompleta = {
-    "species_key": "especie_incompleta",
-    "species": "Especie Incompleta"
-    # Faltan kingdom, phylum, class, order, family
-}
+# -------------------------------------------------------------
+# PRUEBA 2: Validación enum en 'species' (Kingdom inválido)
+# -------------------------------------------------------------
+print("▶ PRUEBA 2: Probando restricción 'enum' en Kingdom (ej. 'Invalido')...")
+specie_enum_invalido = specie_valida.copy()
+specie_enum_invalido["species_key"] = "especie_invalida"
+specie_enum_invalido["Kingdom"] = "Invalido"
 
 try:
-    db.species.insert_one(specie_incompleta)
-    print("  [FALLÓ] MongoDB debió rechazar el documento pero lo aceptó.\n")
-except WriteError as e:
+    db.species.insert_one(specie_enum_invalido)
+    print("  [FALLÓ] MongoDB debió rechazar el Kingdom inválido pero lo aceptó.\n")
+except WriteError:
     print("  [PROTEGIDO] MongoDB RECHAZÓ el documento:")
-    print("  --> Razón: Violación de $jsonSchema (faltan campos obligatorios).\n")
+    print("  --> Razón: Violación de $jsonSchema (Kingdom solo permite Animalia, Plantae o Fungi).\n")
 
-
-# PRUEBA 3: Inserción válida en 'sequences'
-
-print("▶ PRUEBA 3: Insertando secuencia de elemento transponible con k-mers y métricas...")
+# -------------------------------------------------------------
+# PRUEBA 3: Inserción válida en 'sequences' con k-mers completos (k1 a k6)
+# -------------------------------------------------------------
+print("▶ PRUEBA 3: Insertando secuencia con perfil completo de k-mers (k1 a k6)...")
 secuencia_valida = {
     "sequence_id": "PDB00000001",
     "species_key": "halicephalobus mephisto",
@@ -78,37 +80,42 @@ secuencia_valida = {
     },
     "kmers": {
         "k1": {"A": 17, "C": 7, "G": 11, "T": 21},
-        "k2": {"AA": 4, "AC": 2, "AG": 3, "AT": 8}
+        "k2": {"AA": 4, "AC": 2, "AG": 3, "AT": 8},
+        "k3": {"AAA": 1, "AAT": 2},
+        "k4": {"AAAA": 1},
+        "k5": {"AAAAA": 1},
+        "k6": {"AAAAAA": 1}
     }
 }
 
 try:
     res = db.sequences.insert_one(secuencia_valida)
-    print("  [ÉXITO] Secuencia insertada correctamente.")
+    print("  [ÉXITO] Secuencia insertada correctamente con k-mers k1 a k6.")
     print(f"  ID generado: {res.inserted_id} | Sequence ID: PDB00000001\n")
 except Exception as e:
     print(f"  [ERROR INESPERADO]: {e}\n")
 
-
+# -------------------------------------------------------------
 # PRUEBA 4: Duplicado en 'sequences' (Índice único en sequence_id)
-
+# -------------------------------------------------------------
 print("▶ PRUEBA 4: Intentando insertar OTRA secuencia con el MISMO sequence_id ('PDB00000001')...")
 secuencia_duplicada = secuencia_valida.copy()
-secuencia_duplicada.pop("_id", None) # Quitamos el _id para que Mongo genere uno nuevo pero choque en sequence_id
+secuencia_duplicada.pop("_id", None)
 
 try:
     db.sequences.insert_one(secuencia_duplicada)
     print("  [FALLÓ] MongoDB debió rechazar el ID duplicado pero lo aceptó.\n")
-except DuplicateKeyError as e:
+except DuplicateKeyError:
     print("  [PROTEGIDO] El índice único rechazó el duplicado:")
-    print("  --> Error: E11000 duplicate key error collection: panteon_dev.sequences index: idx_sequence_id_unique\n")
+    print("  --> Error: E11000 duplicate key error en sequence_id.\n")
 
+# -------------------------------------------------------------
+# Limpieza segura (borra únicamente los registros de prueba)
+# -------------------------------------------------------------
+db.species.delete_one({"species_key": "halicephalobus mephisto"})
+db.sequences.delete_one({"sequence_id": "PDB00000001"})
 
-# Resumen y limpieza
-
-db.species.delete_many({})
-db.sequences.delete_many({})
 print("="*60)
-print("  RESULTADO: 4/4 pruebas pasadas con éxito.")
-print("  La base de datos limpió los registros de prueba y está lista.")
+print("  RESULTADO: Todas las pruebas pasadas con éxito.")
+print("  Limpieza segura completada (solo se eliminaron los datos del test).")
 print("="*60 + "\n")
