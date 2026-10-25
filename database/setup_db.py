@@ -6,70 +6,91 @@ Configura las colecciones con validación estructural ($jsonSchema) e índices e
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import CollectionInvalid, OperationFailure
 
+
 # 1. Esquema de validación para la colección 'species'
+# Alineado con las columnas de pipeline/limpiar.py:
+# - Mayúscula inicial para columnas originales del CSV
+# - Minúsculas para columnas calculadas (species_key, source_2, annotation)
+# - Restricciones 'enum' para Kingdom, source_2 y Notes
 
 SCHEMA_SPECIES = {
     "$jsonSchema": {
         "bsonType": "object",
         "required": [
             "species_key",
-            "species",
-            "kingdom",
-            "phylum",
-            "class",
-            "order",
-            "family",
+            "Species",
+            "Kingdom",
+            "Phylum",
+            "Class",
+            "Order",
+            "Family",
         ],
         "properties": {
             "species_key": {
                 "bsonType": "string",
                 "description": "Clave única normalizada para cruce con FASTA (minúsculas, sin espacios extras)",
             },
-            "species": {
+            "Species": {
                 "bsonType": "string",
                 "description": "Nombre científico original de la especie",
             },
-            "kingdom": {
+            "Kingdom": {
                 "bsonType": "string",
-                "description": "Reino biológico (Animalia, Plantae, Fungi)",
+                "enum": ["Animalia", "Plantae", "Fungi"],
+                "description": "Reino biológico restringido a Animalia, Plantae o Fungi",
             },
-            "phylum": {
+            "Phylum": {
                 "bsonType": "string",
                 "description": "Phylum taxonómico",
             },
-            "class": {
+            "Class": {
                 "bsonType": "string",
                 "description": "Clase taxonómica de la especie (organismo)",
             },
-            "order": {
+            "Order": {
                 "bsonType": "string",
                 "description": "Orden taxonómico de la especie (organismo)",
             },
-            "family": {
+            "Family": {
                 "bsonType": "string",
                 "description": "Familia taxonómica de la especie",
             },
-            "source": {
+            "Source": {
                 "bsonType": ["string", "null"],
                 "description": "Origen principal de la biblioteca de TEs (ej. Dfam, RM2+MCH)",
             },
             "source_2": {
                 "bsonType": ["string", "null"],
-                "description": "Origen secundario (ej. Repbase)",
+                "enum": ["Repbase", "Dfam", None],
+                "description": "Origen secundario validado (Repbase, Dfam o null)",
             },
             "annotation": {
                 "bsonType": ["string", "null"],
-                "description": "Notas o anotaciones extra de origen",
+                "description": "Notas o anotaciones extra separadas de Source 2",
             },
-            "notes": {
+            "Notes": {
                 "bsonType": ["string", "null"],
-                "description": "Procedencia y detalles de los datos",
+                "enum": [
+                    "B-GUT",
+                    'ENSEMBL "2023"',
+                    'ENSEMBL "2025"',
+                    "Curated Dfam",
+                    "Uncurated Dfam",
+                    "Dfam no especie",
+                    "Release 1.2",
+                    "No especie Repbase",
+                    "APTEdb",
+                    None,
+                ],
+                "description": "Procedencia y detalles con valores discretos del dataset",
             },
         },
     }
 }
 
+
 # 2. Esquema de validación para la colección 'sequences'
+# Exige k-mers completos de k1 a k6
 
 SCHEMA_SEQUENCES = {
     "$jsonSchema": {
@@ -146,8 +167,8 @@ SCHEMA_SEQUENCES = {
             },
             "kmers": {
                 "bsonType": "object",
-                "required": ["k1", "k2"],
-                "description": "Diccionario con los perfiles de k-mers (k1 a k6)",
+                "required": ["k1", "k2", "k3", "k4", "k5", "k6"],
+                "description": "Diccionario con los perfiles completos de k-mers (k1 a k6)",
             },
         },
     }
@@ -196,19 +217,21 @@ def setup_database(uri="mongodb://localhost:27017", db_name="panteon_dev", drop_
                 "validationAction": "error",
             })
 
-    
+
+
     # 2. Creación de Índices Estratégicos
+
 
     print("\n=== Configurando Índices Estratégicos ===")
 
-    # Índices en 'species'
+    # Índices en 'species' (Alineados con mayúsculas de limpiar.py)
     print("[*] Índices en colección 'species'...")
     # Índice único para garantizar clave de cruce sin duplicados
     db.species.create_index([("species_key", ASCENDING)], unique=True, name="idx_species_key_unique")
-    # Índice para consultas y filtros por reino
-    db.species.create_index([("kingdom", ASCENDING), ("class", ASCENDING)], name="idx_kingdom_class")
+    # Índice para consultas y filtros por reino y clase taxonómica
+    db.species.create_index([("Kingdom", ASCENDING), ("Class", ASCENDING)], name="idx_kingdom_class")
     # Índice para comparaciones por origen (Dfam vs RM2+MCH)
-    db.species.create_index([("source", ASCENDING)], name="idx_species_source")
+    db.species.create_index([("Source", ASCENDING)], name="idx_species_source")
 
     # Índices en 'sequences'
     print("[*] Índices en colección 'sequences'...")
