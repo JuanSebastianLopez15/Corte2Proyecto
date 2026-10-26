@@ -76,3 +76,9 @@ def cargar_lotes(coleccion, documentos, campo_id, tam=1000):
     if lote:
         volcar()
     return insertados, rechazados
+
+def cargar_species(db, tabla):
+    """Carga TODAS las especies del CSV limpio en db.species.
+    Devuelve (insertadas, rechazadas), igual que cargar_lotes."""
+    docs = armar_especies(tabla, set(tabla["species_key"]))
+    return cargar_lotes(db.species, docs, "species_key")
