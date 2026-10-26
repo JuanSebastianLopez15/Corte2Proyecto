@@ -1,5 +1,7 @@
 """Armado de documentos y carga por lotes a MongoDB."""
 import numpy as np
+from pipeline.fasta import leer_fasta
+
 from pymongo.errors import BulkWriteError
 import time
 from pipeline.kmers import contar_kmers, etiquetas, metricas
@@ -88,3 +90,11 @@ def cargar_species(db, tabla):
     Devuelve (insertadas, rechazadas), igual que cargar_lotes."""
     docs = armar_especies(tabla, set(tabla["species_key"]))
     return cargar_lotes(db.species, docs, "species_key")
+
+def secuencias_pendientes(db, ruta_fasta, especies=None):
+    """Genera los documentos de 'sequences' que aún no están en MongoDB
+    (así el pipeline se puede reanudar sin duplicar ni recalcular)."""
+    ya = set(db.sequences.distinct("sequence_id"))
+    for campos in leer_fasta(ruta_fasta, especies):
+        if campos["sequence_id"] not in ya:
+            yield armar_secuencia(campos)
