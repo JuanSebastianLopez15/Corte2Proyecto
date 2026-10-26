@@ -1,7 +1,7 @@
 """Armado de documentos y carga por lotes a MongoDB."""
 import numpy as np
 from pymongo.errors import BulkWriteError
-
+import time
 from pipeline.kmers import contar_kmers, etiquetas, metricas
 
 # Las etiquetas se calculan una sola vez (5.460 textos en total)
@@ -56,17 +56,23 @@ def _insertar(coleccion, lote):
         return e.details["nInserted"], e.details["writeErrors"]
 
 
-def cargar_lotes(coleccion, documentos, campo_id, tam=1000):
+def cargar_lotes(coleccion, documentos, campo_id, tam=1000, cada=10):
     """Inserta por lotes de 'tam' documentos desde cualquier iterable (también
-    un generador). Devuelve (insertados, rechazados), donde rechazados es una
-    lista de (valor de campo_id, código de error)."""
-    insertados, rechazados, lote = 0, [], []
+    un generador). Imprime el progreso cada 'cada' lotes (0 = en silencio).
+    Devuelve (insertados, rechazados), donde rechazados es una lista de
+    (valor de campo_id, código de error)."""
+    insertados, rechazados, lote, n_lotes = 0, [], [], 0
+    t0 = time.perf_counter()
 
     def volcar():
-        nonlocal insertados
+        nonlocal insertados, n_lotes
         n, errores = _insertar(coleccion, lote)
         insertados += n
         rechazados.extend((lote[e["index"]].get(campo_id), e["code"]) for e in errores)
+        n_lotes += 1
+        if cada and n_lotes % cada == 0:
+            t = time.perf_counter() - t0
+            print(f"  {insertados:>8,} insertados | {len(rechazados)} rechazados | {t/60:.1f} min")
 
     for doc in documentos:
         lote.append(doc)
