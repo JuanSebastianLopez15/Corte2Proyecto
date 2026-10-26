@@ -40,19 +40,19 @@ SCHEMA_SPECIES = {
                 "description": "Reino biológico restringido a Animalia, Plantae o Fungi",
             },
             "Phylum": {
-                "bsonType": "string",
+                "bsonType": ["string", "null"],
                 "description": "Phylum taxonómico",
             },
             "Class": {
-                "bsonType": "string",
+                "bsonType": ["string", "null"],
                 "description": "Clase taxonómica de la especie (organismo)",
             },
             "Order": {
-                "bsonType": "string",
+                "bsonType": ["string", "null"],
                 "description": "Orden taxonómico de la especie (organismo)",
             },
             "Family": {
-                "bsonType": "string",
+                "bsonType": ["string", "null"],
                 "description": "Familia taxonómica de la especie",
             },
             "Source": {
@@ -107,8 +107,9 @@ SCHEMA_SEQUENCES = {
         "properties": {
             "sequence_id": {
                 "bsonType": "string",
-                "pattern": "^PDB[0-9]+$",
-                "description": "Identificador original de la secuencia (ej. PDB00000001)",
+                 "minLength": 1,
+                #"pattern": "^PDB[0-9]+$",
+                 "description": "Identificador original del FASTA. 208.346 llevan prefijo PDB (PDB00000001) y 31.600 usan el nombre de la fuente (ej. PumCon-1.11)",
             },
             "species_key": {
                 "bsonType": "string",
@@ -151,17 +152,18 @@ SCHEMA_SEQUENCES = {
                         "bsonType": ["double", "int"],
                         "minimum": 0.0,
                         "maximum": 100.0,
-                        "description": "Porcentaje de contenido GC ((G+C)/longitud * 100)",
+                        "description": "Porcentaje de GC sobre las bases conocidas: (G+C)/(A+C+G+T) * 100; las N no cuentan",
                     },
                     "n_count": {
                         "bsonType": ["int", "long"],
                         "minimum": 0,
                         "description": "Cantidad de bases no determinadas (N)",
                     },
-                    "other_count": {
-                        "bsonType": ["int", "long"],
-                        "minimum": 0,
-                        "description": "Cantidad de caracteres fuera del alfabeto estándar",
+                    "n_pct": {
+                        "bsonType": ["double", "int"],
+                        "minimum": 0.0,
+                        "maximum": 100.0,
+                        "description": "Porcentaje de N sobre la longitud total",
                     },
                 },
             },
