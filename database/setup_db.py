@@ -153,7 +153,6 @@ SCHEMA_SEQUENCES = {
                         "minimum": 0.0,
                         "maximum": 100.0,
                         "description": "Porcentaje de GC sobre las bases conocidas: (G+C)/(A+C+G+T) * 100; las N no cuentan",
-                    }
                     },
                     "n_count": {
                         "bsonType": ["int", "long"],
