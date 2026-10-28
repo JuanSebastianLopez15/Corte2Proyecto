@@ -93,7 +93,7 @@ SCHEMA_SEQUENCES = {
             "sequence_id": {
                 "bsonType": "string",
                 "minLength": 1,
-                "description": "Identificador original del FASTA",
+                "description": "Identificador original del FASTA (208.346 con prefijo PDB y 31.600 con nombres de la fuente)",
             },
             "species_key": {
                 "bsonType": "string",
@@ -135,7 +135,7 @@ SCHEMA_SEQUENCES = {
                         "bsonType": ["double", "int"],
                         "minimum": 0.0,
                         "maximum": 100.0,
-                        "description": "Porcentaje de GC sobre bases conocidas: (G+C)/(A+C+G+T) * 100",
+                        "description": "Porcentaje de GC sobre las bases conocidas: (G+C)/(A+C+G+T) * 100; las N no cuentan",
                     },
                     "n_count": {
                         "bsonType": ["int", "long"],
@@ -145,10 +145,7 @@ SCHEMA_SEQUENCES = {
                         "bsonType": ["double", "int"],
                         "minimum": 0.0,
                         "maximum": 100.0,
-                    },
-                    "other_count": {
-                        "bsonType": ["int", "long"],
-                        "minimum": 0,
+                        "description": "Porcentaje de N sobre la longitud total",
                     },
                 },
             },

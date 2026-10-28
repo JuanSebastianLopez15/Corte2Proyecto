@@ -12,6 +12,12 @@ COLS = ["Kingdom", "Phylum", "Class", "Order", "Family",
 
 FUENTES_VALIDAS = {"Repbase", "Dfam"}
 
+# Columnas de taxonomía de la especie (las que pueden traer marcadores de faltante)
+TAXONOMIA = ["Kingdom", "Phylum", "Class", "Order", "Family"]
+
+# Textos que el CSV usa para decir "no hay dato" ("No order", "No trobat", "No ordre NCBI"...).
+# \b evita tocar nombres reales que empiezan por "No" (Nostocales, Noctuidae).
+MARCADOR_FALTANTE = re.compile(r"(?i)^no\b")
 
 
 def clave(s):
@@ -31,13 +37,18 @@ def limpiar_csv(ruta):
     faltan = [c for c in COLS if c not in crudo.columns]
     assert not faltan, f"Columnas no encontradas: {faltan}"
 
-    # Solo las 9 columnas, strip yvacio a none
+    # Solo las 9 columnas, strip y vacío a None
     datos = crudo[COLS].copy()
     datos = datos.apply(lambda col: col.str.strip())
     datos = datos.replace("", None)
     datos = datos.astype(object).where(datos.notna(), None)
 
-    # Separar Source 2 en source_2 
+    # Marcadores de faltante en la taxonomía -> None (igual que un vacío)
+    for col in TAXONOMIA:
+        es_marcador = datos[col].fillna("").str.match(MARCADOR_FALTANTE)
+        datos.loc[es_marcador, col] = None
+
+    # Separar Source 2 en source_2 y annotation
     es_fuente = datos["Source 2"].isin(FUENTES_VALIDAS)
     tiene_valor = datos["Source 2"].notna()
 
@@ -50,6 +61,7 @@ def limpiar_csv(ruta):
     datos["species_key"] = datos["Species"].map(clave)
 
     return datos
+
 
 def normalizar_secuencia(seq):
     """Pasa la secuencia a mayúsculas y verifica que solo contenga
