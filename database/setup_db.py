@@ -1,17 +1,6 @@
-"""
-Módulo de inicialización de la Base de Datos para el proyecto PanTEon.
-Configura las colecciones con validación estructural ($jsonSchema) e índices estratégicos.
-"""
+"""Inicialización de la base de datos en MongoDB: esquemas $jsonSchema e índices."""
 
 from pymongo import MongoClient, ASCENDING
-from pymongo.errors import CollectionInvalid, OperationFailure
-
-
-# 1. Esquema de validación para la colección 'species'
-# Alineado con las columnas de pipeline/limpiar.py:
-# - Mayúscula inicial para columnas originales del CSV
-# - Minúsculas para columnas calculadas (species_key, source_2, annotation)
-# - Restricciones 'enum' para Kingdom, source_2 y Notes
 
 SCHEMA_SPECIES = {
     "$jsonSchema": {
@@ -28,7 +17,7 @@ SCHEMA_SPECIES = {
         "properties": {
             "species_key": {
                 "bsonType": "string",
-                "description": "Clave única normalizada para cruce con FASTA (minúsculas, sin espacios extras)",
+                "description": "Clave única normalizada para cruce con FASTA",
             },
             "Species": {
                 "bsonType": "string",
@@ -37,7 +26,7 @@ SCHEMA_SPECIES = {
             "Kingdom": {
                 "bsonType": "string",
                 "enum": ["Animalia", "Plantae", "Fungi"],
-                "description": "Reino biológico restringido a Animalia, Plantae o Fungi",
+                "description": "Reino biológico (Animalia, Plantae o Fungi)",
             },
             "Phylum": {
                 "bsonType": ["string", "null"],
@@ -45,11 +34,11 @@ SCHEMA_SPECIES = {
             },
             "Class": {
                 "bsonType": ["string", "null"],
-                "description": "Clase taxonómica de la especie (organismo)",
+                "description": "Clase taxonómica de la especie",
             },
             "Order": {
                 "bsonType": ["string", "null"],
-                "description": "Orden taxonómico de la especie (organismo)",
+                "description": "Orden taxonómico de la especie",
             },
             "Family": {
                 "bsonType": ["string", "null"],
@@ -57,7 +46,7 @@ SCHEMA_SPECIES = {
             },
             "Source": {
                 "bsonType": ["string", "null"],
-                "description": "Origen principal de la biblioteca de TEs (ej. Dfam, RM2+MCH)",
+                "description": "Origen principal de la biblioteca de TEs (Dfam, RM2+MCH)",
             },
             "source_2": {
                 "bsonType": ["string", "null"],
@@ -82,15 +71,11 @@ SCHEMA_SPECIES = {
                     "APTEdb",
                     None,
                 ],
-                "description": "Procedencia y detalles con valores discretos del dataset",
+                "description": "Procedencia y detalles del dataset",
             },
         },
     }
 }
-
-
-# 2. Esquema de validación para la colección 'sequences'
-# Exige k-mers completos de k1 a k6
 
 SCHEMA_SEQUENCES = {
     "$jsonSchema": {
@@ -107,37 +92,36 @@ SCHEMA_SEQUENCES = {
         "properties": {
             "sequence_id": {
                 "bsonType": "string",
-                 "minLength": 1,
-                #"pattern": "^PDB[0-9]+$",
-                 "description": "Identificador original del FASTA. 208.346 llevan prefijo PDB (PDB00000001) y 31.600 usan el nombre de la fuente (ej. PumCon-1.11)",
+                "minLength": 1,
+                "description": "Identificador original del FASTA (208.346 con prefijo PDB y 31.600 con nombres de la fuente)",
             },
             "species_key": {
                 "bsonType": "string",
-                "description": "Clave de cruce normalizada hacia la colección species",
+                "description": "Clave de cruce normalizada hacia species",
             },
             "species_raw": {
                 "bsonType": "string",
-                "description": "Texto original del encabezado del FASTA después de @",
+                "description": "Texto original del encabezado después de @",
             },
             "te_class": {
                 "bsonType": "string",
-                "description": "Clase del elemento transponible (ej. CLASSI, CLASSII)",
+                "description": "Clase del elemento transponible",
             },
             "te_order": {
                 "bsonType": "string",
-                "description": "Orden del elemento transponible (ej. LTR, HELITRON, TIR)",
+                "description": "Orden del elemento transponible",
             },
             "te_superfamily": {
                 "bsonType": ["string", "null"],
-                "description": "Superfamilia del TE (ej. GYPSY, COPIA, HELITRON). Puede ser null si el TE no tiene nivel 3",
+                "description": "Superfamilia del elemento transponible",
             },
             "classification_raw": {
                 "bsonType": "string",
-                "description": "Cadena completa de clasificación tal como viene en el encabezado FASTA",
+                "description": "Cadena completa de clasificación del encabezado FASTA",
             },
             "sequence": {
                 "bsonType": "string",
-                "description": "Secuencia completa de nucleótidos (mayúsculas: A, C, G, T, N)",
+                "description": "Secuencia completa de nucleótidos (A, C, G, T, N)",
             },
             "metrics": {
                 "bsonType": "object",
@@ -146,7 +130,6 @@ SCHEMA_SEQUENCES = {
                     "length": {
                         "bsonType": ["int", "long"],
                         "minimum": 1,
-                        "description": "Longitud de la secuencia en nucleótidos",
                     },
                     "gc_content": {
                         "bsonType": ["double", "int"],
@@ -157,7 +140,6 @@ SCHEMA_SEQUENCES = {
                     "n_count": {
                         "bsonType": ["int", "long"],
                         "minimum": 0,
-                        "description": "Cantidad de bases no determinadas (N)",
                     },
                     "n_pct": {
                         "bsonType": ["double", "int"],
@@ -170,7 +152,7 @@ SCHEMA_SEQUENCES = {
             "kmers": {
                 "bsonType": "object",
                 "required": ["k1", "k2", "k3", "k4", "k5", "k6"],
-                "description": "Diccionario con los perfiles completos de k-mers (k1 a k6)",
+                "description": "Perfiles de k-mers (k1 a k6)",
             },
         },
     }
@@ -178,20 +160,9 @@ SCHEMA_SEQUENCES = {
 
 
 def setup_database(uri="mongodb://localhost:27017", db_name="panteon_dev", drop_existing=False):
-    """
-    Inicializa la base de datos con colecciones validadas e índices.
-    
-    Args:
-        uri: Dirección de conexión a MongoDB.
-        db_name: Nombre de la base de datos ('panteon_dev' o 'panteon').
-        drop_existing: Si es True, borra las colecciones previas para reiniciar en limpio.
-    """
     client = MongoClient(uri)
     db = client[db_name]
 
-    print(f"=== Inicializando Base de Datos: '{db_name}' en {uri} ===")
-
-    # 1. Preparar colecciones
     colecciones = {
         "species": SCHEMA_SPECIES,
         "sequences": SCHEMA_SEQUENCES,
@@ -199,11 +170,9 @@ def setup_database(uri="mongodb://localhost:27017", db_name="panteon_dev", drop_
 
     for nombre, esquema in colecciones.items():
         if drop_existing and nombre in db.list_collection_names():
-            print(f"[*] Eliminando colección existente '{nombre}'...")
             db[nombre].drop()
 
         if nombre not in db.list_collection_names():
-            print(f"[*] Creando colección '{nombre}' con validación $jsonSchema...")
             db.create_collection(
                 nombre,
                 validator=esquema,
@@ -211,7 +180,6 @@ def setup_database(uri="mongodb://localhost:27017", db_name="panteon_dev", drop_
                 validationAction="error",
             )
         else:
-            print(f"[*] Actualizando validador de colección existente '{nombre}'...")
             db.command({
                 "collMod": nombre,
                 "validator": esquema,
@@ -219,62 +187,35 @@ def setup_database(uri="mongodb://localhost:27017", db_name="panteon_dev", drop_
                 "validationAction": "error",
             })
 
-
-
-    # 2. Creación de Índices Estratégicos
-
-
-    print("\n=== Configurando Índices Estratégicos ===")
-
-    # Índices en 'species' (Alineados con mayúsculas de limpiar.py)
-    print("[*] Índices en colección 'species'...")
-    # Índice único para garantizar clave de cruce sin duplicados
+    # Índices en species
     db.species.create_index([("species_key", ASCENDING)], unique=True, name="idx_species_key_unique")
-    # Índice para consultas y filtros por reino y clase taxonómica
     db.species.create_index([("Kingdom", ASCENDING), ("Class", ASCENDING)], name="idx_kingdom_class")
-    # Índice para comparaciones por origen (Dfam vs RM2+MCH)
     db.species.create_index([("Source", ASCENDING)], name="idx_species_source")
 
-    # Índices en 'sequences'
-    print("[*] Índices en colección 'sequences'...")
-    # Índice único por ID original del FASTA (búsqueda obligatoria consulta 8)
+    # Índices en sequences
     db.sequences.create_index([("sequence_id", ASCENDING)], unique=True, name="idx_sequence_id_unique")
-    # Índice compuesto para buscar superfamilias dentro de una especie (consulta 9 y exportador)
     db.sequences.create_index(
         [("species_key", ASCENDING), ("te_superfamily", ASCENDING)],
-        name="idx_species_superfamily"
+        name="idx_species_superfamily",
     )
-    # Índice compuesto para agregaciones y conteos de jerarquía TE (consultas 1, 2, 3 y 5)
     db.sequences.create_index(
         [("te_class", ASCENDING), ("te_order", ASCENDING), ("te_superfamily", ASCENDING)],
-        name="idx_te_hierarchy"
+        name="idx_te_hierarchy",
     )
-    # Índice para consultas de longitud extrema y ordenamientos (consultas 5 y 7)
     db.sequences.create_index([("metrics.length", ASCENDING)], name="idx_metrics_length")
-    # Índice para consultas de contenido GC (consulta 6)
     db.sequences.create_index([("metrics.gc_content", ASCENDING)], name="idx_metrics_gc")
 
-    print("\n✓ Configuración completada con éxito.")
-    
-    # Resumen de índices creados
-    print("\n--- Índices actuales en 'species' ---")
-    for idx in db.species.list_indexes():
-        print(f" - {idx['name']}: {idx['key']}")
-
-    print("\n--- Índices actuales en 'sequences' ---")
-    for idx in db.sequences.list_indexes():
-        print(f" - {idx['name']}: {idx['key']}")
-
+    print(f"Base '{db_name}' lista. Colecciones:", db.list_collection_names())
     return db
 
 
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Configuración de base de datos MongoDB con $jsonSchema e índices.")
-    parser.add_argument("--db", default="panteon_dev", help="Nombre de la base de datos (panteon_dev o panteon)")
-    parser.add_argument("--drop", action="store_true", help="Eliminar colecciones previas antes de crear")
-    parser.add_argument("--uri", default="mongodb://localhost:27017", help="URI de conexión a MongoDB")
+    parser = argparse.ArgumentParser(description="Configura colecciones, $jsonSchema e índices en MongoDB.")
+    parser.add_argument("--db", default="panteon_dev", help="Nombre de la base de datos")
+    parser.add_argument("--drop", action="store_true", help="Borrar colecciones antes de crear")
+    parser.add_argument("--uri", default="mongodb://localhost:27017", help="URI de MongoDB")
 
     args = parser.parse_args()
     setup_database(uri=args.uri, db_name=args.db, drop_existing=args.drop)
