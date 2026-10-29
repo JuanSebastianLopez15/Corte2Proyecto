@@ -1,0 +1,230 @@
+%Version 3.1 December 2024
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
+
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
+
+%%\documentclass[lineno,pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%=========================================================================================%%
+%% the documentclass is set to pdflatex as default. You can delete it if not appropriate.  %%
+%%=========================================================================================%%
+
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove Numbered in the optional parenthesis. 
+%%The option is available for: sn-basic.bst, sn-chicago.bst%  
+ 
+%%\documentclass[pdflatex,sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+%\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style
+\documentclass[pdflatex,lineno,referee,sn-vancouver-num]{sn-jnl}
+%%\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[pdflatex,sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[pdflatex,sn-vancouver-num]{sn-jnl}% Vancouver Numbered Reference Style
+%%\documentclass[pdflatex,sn-vancouver-ay]{sn-jnl}% Vancouver Author Year Reference Style
+%%\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style
+%%\documentclass[pdflatex,sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
+%%%%
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published 
+%%%%  by Springer Nature. The guidance has been prepared in partnership with 
+%%%%  production teams to conform to Springer Nature technical requirements. 
+%%%%  Editorial and presentation requirements differ among journal portfolios and 
+%%%%  research disciplines. You may find sections in this template are irrelevant 
+%%%%  to your work and are empowered to omit any such section if allowed by the 
+%%%%  journal you intend to submit to. The submission guidelines and policies 
+%%%%  of the journal take precedence. A detailed User Manual is available in the 
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
+
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{proposition}[theorem]{Proposition}% 
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
+
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
+
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
+
+\begin{document}
+
+\title[Elementos transponibles con perfiles de k-mers en MongoDB]{Almacenamiento y consulta de 239.946 secuencias de elementos transponibles con perfiles de k-mers en MongoDB}
+
+%%=============================================================%%
+%% GivenName	-> \fnm{Joergen W.}
+%% Particle	-> \spfx{van der} -> surname prefix
+%% FamilyName	-> \sur{Ploeg}
+%% Suffix	-> \sfx{IV}
+%% \author*[1,2]{\fnm{Joergen W.} \spfx{van der} \sur{Ploeg} 
+%%  \sfx{IV}}\email{iauthor@gmail.com}
+%%=============================================================%%
+\author*[1]{\fnm{Alejandro} \sur{Diaz}}\email{alejo.diaz.ruiz@gmail.com}
+
+\author*[1]{\fnm{Sebastian} \sur{Villaneda}}\email{sebastianvillaneda202@gmail.com}
+
+\author*[1]{\fnm{Johan} \sur{Javier}}\email{johanjavier654@gmail.com}
+
+\author*[1]{\fnm{Juan Sebastian} \sur{Lopez}}\email{juanse150906@gmail.com}
+
+\affil*[1]{\orgdiv{Ingeniería de Sistemas}, \orgname{Universidad Autónoma de Manizales}, \orgaddress{\city{Manizales}, \state{Caldas}, \country{Colombia}}}
+
+%%==================================%%
+%% Sample for unstructured abstract %%
+%%==================================%%
+
+\abstract{Pendiente de redactar (máximo 350 palabras).}
+
+%%================================%%
+%% Sample for structured abstract %%
+%%================================%%
+
+% \abstract{\textbf{Purpose:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Methods:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Results:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.
+% 
+% \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
+
+\keywords{k-mers, MongoDB, bases de datos NoSQL, PanTEon, pipeline de datos, evaluación de rendimiento, integridad de datos, elementos transponibles}
+
+%%\pacs[JEL Classification]{D8, H51}
+
+%%\pacs[MSC Classification]{35A01, 65L10, 65L12, 65L20, 65L70}
+
+\maketitle
+
+\section{Introducción}\label{sec:intro}
+% Qué son los elementos transponibles, por qué almacenarlos y analizarlos es un reto, y objetivo del trabajo.
+
+\section{Trabajo relacionado}\label{sec:relacionado}
+% Cómo organizan esta información otras bases de datos (por ejemplo PanTEon y Dfam).
+
+\section{Materiales y métodos}\label{sec:metodos}
+
+\subsection{Datos y problemas de calidad}\label{subsec:datos}
+% Descripción del CSV y del FASTA, y los problemas de calidad encontrados.
+
+\subsection{Modelo de datos}\label{subsec:modelo}
+% Las dos colecciones (species y sequences), con diagrama.
+
+\subsection{Decisiones de diseño}\label{subsec:decisiones}
+% Cada decisión con las alternativas descartadas y la justificación.
+
+\subsection{Pipeline en Python}\label{subsec:pipeline}
+% Lectura, limpieza, cruce, cálculo de k-mers y carga en MongoDB.
+
+\subsection{Diseño de los experimentos}\label{subsec:experimentos}
+% Estrategia A frente a estrategia B, e índices.
+
+\section{Resultados y discusión}\label{sec:resultados}
+
+\subsection{Respuestas a las consultas}\label{subsec:consultas}
+% Resultados y figuras de las consultas.
+
+\subsection{Evaluación experimental de los diseños}\label{subsec:evaluacion}
+% Resultados del benchmark.
+
+\subsection{Ventajas y limitaciones del diseño}\label{subsec:limitaciones}
+
+\subsection{Crecimiento de los datos}\label{subsec:crecimiento}
+% Qué cambiaría si los datos crecieran 10 o 100 veces.
+
+\subsection{Amenazas a la validez}\label{subsec:validez}
+
+\section{Conclusiones}\label{sec:conclusiones}
+
+\backmatter
+
+\section*{Lista de abreviaturas}
+
+\section*{Declaraciones}
+
+\bmhead{Aprobación ética y consentimiento para participar} No aplica.
+
+\bmhead{Consentimiento para la publicación} No aplica.
+
+\bmhead{Disponibilidad de datos y materiales} Pendiente.
+
+\bmhead{Conflictos de interés} Pendiente.
+
+\bmhead{Financiación} Pendiente.
+
+\bmhead{Contribuciones de los autores} Pendiente.
+
+\bmhead{Agradecimientos} Pendiente.
+
+\bmhead{Información de los autores} Pendiente (opcional).
+
+
+%%=============================================%%
+%% For submissions to Nature Portfolio Journals %%
+%% please use the heading ``Extended Data''.   %%
+%%=============================================%%
+
+%%=============================================================%%
+%% Sample for another appendix section			       %%
+%%=============================================================%%
+
+%% \section{Example of another appendix section}\label{secA2}%
+%% Appendices may be used for helpful, supporting or essential material that would otherwise 
+%% clutter, break up or be distracting to the text. Appendices can consist of sections, figures, 
+%% tables and equations etc.
+
+%%===========================================================================================%%
+%% If you are submitting to one of the Nature Portfolio journals, using the eJP submission   %%
+%% system, please include the references within the manuscript file itself. You may do this  %%
+%% by copying the reference list from your .bbl file, paste it into the main manuscript .tex %%
+%% file, and delete the associated \verb+\bibliography+ commands.                            %%
+%%===========================================================================================%%
+
+\nocite{orozco2026panteon,orozco2026panteondb}% temporal: se cambia por \cite{...} cuando escribamos el texto
+\bibliography{sn-bibliography}% common bib file
+%% if required, the content of .bbl file can be included here once bbl is generated
+%%\input sn-article.bbl
+
+\end{document}
